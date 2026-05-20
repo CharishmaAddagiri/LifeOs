@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LifeOS · Sign In</title>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<div class="bg">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <div class="blob blob4"></div>
+</div>
+
+<div class="auth-page">
+  <div class="login-card">
+
+    <div class="brand">
+      <span class="brand-icon">✦</span>
+      <h1>LifeOS</h1>
+      <p>Your beautiful life operating system</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form-panel active" id="panel-login">
+      <div id="login-error" class="error-msg"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-main" id="login-btn" onclick="doLogin()">
+        <span id="login-btn-text">Sign In to LifeOS ✦</span>
+        <div class="spinner" id="login-spinner"></div>
+      </button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="form-panel" id="panel-signup">
+      <div id="signup-error" class="error-msg"></div>
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="signup-name" placeholder="e.g. Priya Sharma" autocomplete="name"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="your@email.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signup-pass" placeholder="Min 6 characters" autocomplete="new-password"/>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="signup-pass2" placeholder="Repeat password" autocomplete="new-password"/>
+      </div>
+      <button class="btn-main" id="signup-btn" onclick="doSignup()">
+        <span id="signup-btn-text">Create My LifeOS ✦</span>
+        <div class="spinner" id="signup-spinner"></div>
+      </button>
+    </div>
+
+    <div class="footer-note">Your data is stored securely on the server ✦</div>
+  </div>
+</div>
+
+<script>
+  const BASE = "http://localhost:3000"
+
+  // If already logged in, go straight to dashboard
+  const savedUser = sessionStorage.getItem("lifeos_user")
+  if (savedUser) window.location.href = "/dashboard.html"
+
+  function switchTab(tab) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"))
+    document.querySelectorAll(".form-panel").forEach(p => p.classList.remove("active"))
+    document.getElementById("tab-" + tab).classList.add("active")
+    document.getElementById("panel-" + tab).classList.add("active")
+  }
+
+  function showErr(id, msg) {
+    const el = document.getElementById(id)
+    el.textContent = msg
+    el.classList.add("show")
+  }
+  function clearErr(id) { document.getElementById(id).classList.remove("show") }
+
+  function setLoading(btn, spin, txt, on) {
+    document.getElementById(btn).disabled       = on
+    document.getElementById(txt).style.display  = on ? "none" : ""
+    document.getElementById(spin).style.display = on ? "block" : "none"
+  }
+
+  async function doLogin() {
+    clearErr("login-error")
+    const email    = document.getElementById("login-email").value.trim()
+    const password = document.getElementById("login-pass").value
+    if (!email || !password) { showErr("login-error", "Please fill in all fields."); return }
+    setLoading("login-btn", "login-spinner", "login-btn-text", true)
+    try {
+      const res  = await fetch(BASE + "/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        showErr("login-error", data.error || "Login failed.")
+        setLoading("login-btn", "login-spinner", "login-btn-text", false)
+        return
+      }
+      // Save user info in sessionStorage (cleared when tab closes)
+      sessionStorage.setItem("lifeos_user", JSON.stringify(data))
+      window.location.href = "/dashboard.html"
+    } catch(e) {
+      showErr("login-error", "Cannot reach server. Is it running?")
+      setLoading("login-btn", "login-spinner", "login-btn-text", false)
+    }
+  }
+
+  async function doSignup() {
+    clearErr("signup-error")
+    const name     = document.getElementById("signup-name").value.trim()
+    const email    = document.getElementById("signup-email").value.trim()
+    const password = document.getElementById("signup-pass").value
+    const pass2    = document.getElementById("signup-pass2").value
+    if (!name || !email || !password || !pass2) { showErr("signup-error", "Please fill in all fields."); return }
+    if (password.length < 6) { showErr("signup-error", "Password must be at least 6 characters."); return }
+    if (password !== pass2)  { showErr("signup-error", "Passwords do not match."); return }
+    setLoading("signup-btn", "signup-spinner", "signup-btn-text", true)
+    try {
+      const res  = await fetch(BASE + "/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        showErr("signup-error", data.error || "Signup failed.")
+        setLoading("signup-btn", "signup-spinner", "signup-btn-text", false)
+        return
+      }
+      sessionStorage.setItem("lifeos_user", JSON.stringify(data))
+      window.location.href = "/dashboard.html"
+    } catch(e) {
+      showErr("signup-error", "Cannot reach server. Is it running?")
+      setLoading("signup-btn", "signup-spinner", "signup-btn-text", false)
+    }
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return
+    document.querySelector(".form-panel.active").id === "panel-login" ? doLogin() : doSignup()
+  })
+</script>
+</body>
+</html>

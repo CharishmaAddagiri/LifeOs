@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LifeOS · Dashboard</title>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="icon">✦</span>
+    <h2>LifeOS</h2>
+    <span>life operating system</span>
+  </div>
+   <button id="theme-toggle">
+
+  🌙 Dark Mode
+
+</button>
+  <div class="nav-section">Overview</div>
+  <button class="nav-btn active" onclick="nav('home',this)"><span class="ni">🏠</span><span>Dashboard</span></button>
+
+  <div class="nav-section">Daily</div>
+  <button class="nav-btn" onclick="nav('tasks',this)"><span class="ni">✅</span><span>Tasks</span></button>
+  <button class="nav-btn" onclick="nav('habits',this)"><span class="ni">🔥</span><span>Habits</span></button>
+  <button class="nav-btn" onclick="nav('mood',this)"><span class="ni">🌸</span><span>Mood</span></button>
+  <button class="nav-btn" onclick="nav('water',this)"><span class="ni">💧</span><span>Water</span></button>
+
+  <div class="nav-section">Wellness</div>
+  <button class="nav-btn" onclick="nav('sleep',this)"><span class="ni">🌙</span><span>Sleep</span></button>
+  <button class="nav-btn" onclick="nav('fitness',this)"><span class="ni">🏃</span><span>Fitness</span></button>
+  <button class="nav-btn" onclick="nav('nutrition',this)"><span class="ni">🥗</span><span>Nutrition</span></button>
+
+  <div class="nav-section">Growth</div>
+  <button class="nav-btn" onclick="nav('dsa',this)"><span class="ni">💻</span><span>DSA Tracker</span></button>
+  <button class="nav-btn" onclick="nav('goals',this)"><span class="ni">🌟</span><span>Goals</span></button>
+
+  <div style="margin-top:auto;padding-top:20px"></div>
+  <div class="user-area">
+    <div class="user-avatar" id="user-avatar">?</div>
+    <div style="overflow:hidden;flex:1;">
+      <div class="user-name" id="user-name-disp">—</div>
+      <div class="user-email" id="user-email-disp">—</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Sign out">⏻</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ===== HOME ===== -->
+<div id="page-home" class="page active">
+  <div class="page-header">
+    <h1 class="serif" id="home-greeting">Good morning ✨</h1>
+    <p id="home-date">Loading...</p>
+  </div>
+
+  <div class="quote-banner mb">
+    <blockquote id="quote-text"></blockquote>
+    <cite id="quote-author"></cite>
+  </div>
+
+  <div class="g4 mb" id="home-stats"></div>
+
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">💧 Water Intake</div>
+      <div class="water-grid" id="home-water-grid"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px;font-weight:600"><span id="home-water-count">0</span> / <span id="home-water-goal">8</span> cups</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-soft btn-sm" onclick="waterDelta(-1)">−</button>
+          <button class="btn btn-rose btn-sm" onclick="waterDelta(1)">+ Cup 💧</button>
+        </div>
+      </div>
+      <div class="pb-wrap"><div class="pb" id="home-water-pb" style="background:linear-gradient(90deg,var(--sky),#6db8f8)"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌙 Sleep Last Night</div>
+      <div class="g2" style="gap:10px;margin-bottom:14px">
+        <div>
+          <label class="field-label">Bedtime</label>
+          <input type="time" class="inp" id="bedtime-inp" oninput="calcSleep()">
+        </div>
+        <div>
+          <label class="field-label">Wake Up</label>
+          <input type="time" class="inp" id="wake-inp" oninput="calcSleep()">
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:10px">
+        <div class="serif" style="font-size:28px" id="sleep-dur">—</div>
+        <div style="font-size:12px;color:var(--textmuted)">Duration · Goal: 8h</div>
+      </div>
+      <div class="pb-wrap"><div class="pb" id="sleep-pb" style="background:linear-gradient(90deg,var(--lavender),var(--lilac))"></div></div>
+    </div>
+  </div>
+
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">✅ Today's Tasks</div>
+      <div id="home-tasks-list"></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <input type="text" class="inp" id="quick-task-inp" placeholder="Add a task..." style="flex:1" onkeydown="if(event.key==='Enter')quickAddTask()">
+        <button class="btn btn-rose" onclick="quickAddTask()">Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔥 Habit Streaks</div>
+      <div id="home-streaks"></div>
+    </div>
+  </div>
+
+  <div class="card mb">
+    <div class="card-title">📈 Weekly Overview</div>
+    <canvas id="homeChart" height="70"></canvas>
+  </div>
+  <div class="card" id="calendar-card">
+
+  <h3>📅 Life Calendar</h3>
+  <div
+  style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:15px 0;
+  "
+>
+
+  <button onclick="prevMonth()">
+    ⬅️
+  </button>
+
+  <h3 id="calendar-month-title">
+  </h3>
+
+  <button onclick="nextMonth()">
+    ➡️
+  </button>
+
+</div>
+
+  <div id="calendar"></div>
+
+  <div id="calendar-day-data">
+
+    <h4 id="calendar-date-title">
+      Select a date
+    </h4>
+
+    <div id="calendar-stats"></div>
+
+  </div>
+
+</div>
+
+  <div class="card">
+    <div class="card-title">⚖️ Life Balance</div>
+    <div class="g3" id="balance-bars"></div>
+  </div>
+</div>
+
+<!-- ===== TASKS ===== -->
+<div id="page-tasks" class="page">
+  <div class="page-header">
+    <h1 class="serif">Task Manager ✅</h1>
+    <p>Stay on top of everything that matters</p>
+  </div>
+  <div class="g4 mb">
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(230,215,255,0.7),rgba(212,191,255,0.4))">
+      <div class="stat-val" style="color:#6b4fbb" id="task-total-v">0</div><div class="stat-label">Total Tasks</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,240,224,0.7),rgba(160,220,190,0.4))">
+      <div class="stat-val" style="color:#2a7a54" id="task-done-v">0</div><div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,214,232,0.7),rgba(240,184,208,0.4))">
+      <div class="stat-val" style="color:#c4607a" id="task-pending-v">0</div><div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(245,230,218,0.7),rgba(232,213,192,0.4))">
+      <div class="stat-val" style="color:#c47a35" id="task-rate-v">0%</div><div class="stat-label">Completion Rate</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">➕ Add Task</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Task Title</label><input class="inp" id="task-title-inp" placeholder="What needs to be done?"/></div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Priority</label>
+            <select class="inp" id="task-pri-inp">
+              <option value="high">🔴 High</option>
+              <option value="med" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+          <div><label class="field-label">Category</label><input class="inp" id="task-cat-inp" placeholder="Work, Study..."/></div>
+        </div>
+        <div><label class="field-label">Due Date</label><input class="inp" type="date" id="task-due-inp"/></div>
+        <button class="btn btn-rose" onclick="addTask()">✅ Add Task</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 All Tasks</div>
+      <input
+  type="date"
+  id="task-date-picker"
+  class="inp"
+  style="margin-bottom:14px"
+/>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="inp" style="width:auto;padding:8px 12px;font-size:12px" id="task-filter" onchange="renderTasksPage()">
+          <option value="all">All</option><option value="pending">Pending</option><option value="done">Done</option>
+        </select>
+        <select class="inp" style="width:auto;padding:8px 12px;font-size:12px" id="task-pri-filter" onchange="renderTasksPage()">
+          <option value="all">All Priorities</option><option value="high">High</option><option value="med">Medium</option><option value="low">Low</option>
+        </select>
+      </div>
+      <div id="tasks-full-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HABITS ===== -->
+<div id="page-habits" class="page">
+  <div class="page-header"><h1 class="serif">Habit Tracker 🔥</h1><p>Build consistency, one day at a time</p></div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">➕ Add New Habit</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Habit Name</label><input class="inp" id="hab-name" placeholder="e.g. Read 20 pages"/></div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Emoji</label><input class="inp" id="hab-icon" placeholder="📚" maxlength="2"/></div>
+          <div><label class="field-label">Category</label>
+            <select class="inp" id="hab-cat">
+              <option>Health</option><option>Fitness</option><option>Learning</option>
+              <option>Mindfulness</option><option>Productivity</option><option>Social</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-rose" onclick="addHabit()">✨ Add Habit</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 This Week's Completion</div>
+      <canvas id="habChart" height="130"></canvas>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="card-title">☀️ Today's Habits</div>
+    <div id="habits-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🗓️ Habit Heatmap (Last 60 Days)</div>
+    <div class="heat-grid" id="hab-heat" style="gap:3px"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--textmuted)">
+      <div style="width:12px;height:12px;border-radius:3px;background:rgba(200,180,160,0.12)"></div>None
+      <div class="hc l1" style="width:12px;height:12px"></div>Low
+      <div class="hc l2" style="width:12px;height:12px"></div>Okay
+      <div class="hc l3" style="width:12px;height:12px"></div>Good
+      <div class="hc l4" style="width:12px;height:12px"></div>All done
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOOD ===== -->
+<div id="page-mood" class="page">
+  <div class="page-header"><h1 class="serif">Mood Tracker 🌸</h1><p>Reflect, journal & track your emotional journey</p></div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">😊 How are you feeling today?</div>
+      <div class="mood-grid" id="mood-grid"></div>
+      <div id="mood-selected" style="font-size:13px;color:var(--textmuted);margin-bottom:14px">Select your mood above</div>
+      <label class="field-label">Today's Journal</label>
+      <textarea class="inp" id="journal-inp" rows="4" placeholder="Write about your day, thoughts, feelings..."></textarea>
+      <label class="field-label" style="margin-top:12px">I am grateful for...</label>
+      <input class="inp" id="gratitude-inp" placeholder="3 things you're thankful for"/>
+      <button class="btn btn-rose" style="margin-top:12px;width:100%" onclick="saveMood()">💾 Save Entry</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Mood Trend (7 days)</div>
+      <canvas id="moodChart" height="140"></canvas>
+      <div style="margin-top:20px">
+        <div class="card-title" style="margin-bottom:12px">🌞 Daily Affirmation</div>
+        <div style="background:linear-gradient(135deg,rgba(230,215,255,0.4),rgba(255,214,232,0.4));border-radius:14px;padding:18px;text-align:center">
+          <p class="serif" style="font-style:italic;font-size:15px;line-height:1.6" id="affirmation-text">I am worthy of love, success, and happiness.</p>
+        </div>
+        <button class="btn btn-soft btn-sm" style="margin-top:10px;width:100%" onclick="newAffirmation()">✨ New Affirmation</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📅 Mood Calendar</div>
+    <div class="heat-grid" id="mood-cal" style="gap:4px"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--textmuted)">
+      <div style="width:12px;height:12px;border-radius:3px;background:rgba(200,180,160,0.12)"></div>No entry
+      <div class="hc l1" style="width:12px;height:12px"></div>Low
+      <div class="hc l2" style="width:12px;height:12px"></div>Okay
+      <div class="hc l3" style="width:12px;height:12px"></div>Good
+      <div class="hc l4" style="width:12px;height:12px"></div>Great
+    </div>
+  </div>
+</div>
+
+<!-- ===== WATER ===== -->
+<div id="page-water" class="page">
+  <div class="page-header"><h1 class="serif">Water Intake 💧</h1><p>Stay hydrated throughout the day</p></div>
+  <div class="g2 mb">
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="text-align:left">Today's Progress</div>
+      <div class="water-grid" id="water-grid-full" style="justify-content:center"></div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px"><span id="water-count-full">0</span> / <span id="water-goal-full">8</span> cups</div>
+      <div class="pb-wrap" style="margin-bottom:16px"><div class="pb" id="water-pb-full" style="background:linear-gradient(90deg,var(--sky),#6db8f8)"></div></div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-soft" onclick="waterDelta(-1)">− Remove</button>
+        <button class="btn btn-rose" onclick="waterDelta(1)">+ Add Cup 💧</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Settings & History</div>
+      <label class="field-label">Daily Goal (cups)</label>
+      <input type="number" class="inp" id="water-goal-inp" min="1" max="20" value="8" style="margin-bottom:16px" oninput="updateWaterGoal()"/>
+      <div class="card-title" style="font-size:13px;margin-bottom:10px">Last 7 Days</div>
+      <div id="water-history"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLEEP ===== -->
+<div id="page-sleep" class="page">
+  <div class="page-header"><h1 class="serif">Sleep Tracker 🌙</h1><p>Optimise your rest and recovery</p></div>
+  <div class="g4 mb">
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(230,215,255,0.7),rgba(212,191,255,0.4))">
+      <div class="stat-val" style="color:#6b4fbb" id="sl-avg-v">—</div><div class="stat-label">Avg Hours</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,214,232,0.7),rgba(240,184,208,0.4))">
+      <div class="stat-val" style="color:#c4607a" id="sl-best-v">—</div><div class="stat-label">Best Night</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,240,224,0.7),rgba(160,220,190,0.4))">
+      <div class="stat-val" style="color:#2a7a54" id="sl-quality-v">—</div><div class="stat-label">Avg Quality</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(245,230,218,0.7),rgba(232,213,192,0.4))">
+      <div class="stat-val" style="color:#c47a35" id="sl-entries-v">0</div><div class="stat-label">Entries</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">📝 Log Sleep</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Date</label><input class="inp" type="date" id="sl-date"/></div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Bedtime</label><input class="inp" type="time" id="sl-bed"/></div>
+          <div><label class="field-label">Wake Time</label><input class="inp" type="time" id="sl-wake"/></div>
+        </div>
+        <div><label class="field-label">Quality: <span id="sl-q-val">7</span>/10</label>
+          <input type="range" min="1" max="10" value="7" id="sl-quality" oninput="document.getElementById('sl-q-val').textContent=this.value"/>
+        </div>
+        <div><label class="field-label">Notes</label><textarea class="inp" id="sl-notes" rows="3" placeholder="How did you sleep?..."></textarea></div>
+        <button class="btn btn-rose" onclick="logSleep()">💾 Log Sleep</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Sleep Trend (7 nights)</div>
+      <canvas id="sleepChart" height="130"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Sleep Log</div>
+    <table class="log-table">
+      <thead><tr><th>Date</th><th>Bedtime</th><th>Wake</th><th>Duration</th><th>Quality</th><th></th></tr></thead>
+      <tbody id="sleep-log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== FITNESS ===== -->
+<div id="page-fitness" class="page">
+  <div class="page-header"><h1 class="serif">Fitness Tracker 🏃</h1><p>Log workouts & crush your goals</p></div>
+  <div class="g4 mb">
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,214,232,0.6),rgba(240,184,208,0.4))">
+      <div class="stat-val" style="color:#c4607a" id="fit-streak">0</div><div class="stat-label">Streak 🔥</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,240,224,0.6),rgba(160,220,190,0.4))">
+      <div class="stat-val" style="color:#2a7a54" id="fit-total">0</div><div class="stat-label">Total Workouts</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,224,255,0.6),rgba(150,200,255,0.4))">
+      <div class="stat-val" style="color:#2060a0" id="fit-time">0</div><div class="stat-label">Total Mins</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(245,230,218,0.6),rgba(232,213,192,0.4))">
+      <div class="stat-val" style="color:#c47a35" id="fit-kcal">0</div><div class="stat-label">Total Kcal</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">🏋️ Log Workout</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Workout Name</label><input class="inp" id="w-name" placeholder="e.g. Morning Run"/></div>
+        <div><label class="field-label">Type</label>
+          <select class="inp" id="w-type">
+            <option>🏃 Running</option><option>🏋️ Strength</option><option>🧘 Yoga</option>
+            <option>🚴 Cycling</option><option>🏊 Swimming</option><option>⚽ Sports</option><option>💪 Other</option>
+          </select>
+        </div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Duration (min)</label><input class="inp" type="number" id="w-dur" placeholder="45"/></div>
+          <div><label class="field-label">Calories</label><input class="inp" type="number" id="w-kcal" placeholder="300"/></div>
+        </div>
+        <div><label class="field-label">Notes</label><input class="inp" id="w-notes" placeholder="How did it feel?"/></div>
+        <button class="btn btn-rose" onclick="logWorkout()">💪 Log Workout</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Weekly Activity</div>
+      <canvas id="fitnessChart" height="130"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Workout Log</div>
+    <table class="log-table">
+      <thead><tr><th>Workout</th><th>Type</th><th>Duration</th><th>Calories</th><th>Date</th><th></th></tr></thead>
+      <tbody id="workout-log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== NUTRITION ===== -->
+<div id="page-nutrition" class="page">
+  <div class="page-header"><h1 class="serif">Nutrition Tracker 🥗</h1><p>Track meals, macros & energy</p></div>
+  <div class="g4 mb">
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,220,200,0.6),rgba(255,190,150,0.4))">
+      <div class="stat-val" style="color:#c06030" id="f-cal">0</div><div class="stat-label">Calories Today</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,240,224,0.6),rgba(160,220,190,0.4))">
+      <div class="stat-val" style="color:#2a7a54" id="f-prot">0g</div><div class="stat-label">Protein</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,224,255,0.6),rgba(150,200,255,0.4))">
+      <div class="stat-val" style="color:#2060a0" id="f-carbs">0g</div><div class="stat-label">Carbs</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,230,200,0.6),rgba(250,200,150,0.4))">
+      <div class="stat-val" style="color:#a06020" id="f-fats">0g</div><div class="stat-label">Fats</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">🍽️ Log Meal</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Meal</label>
+          <select class="inp" id="meal-type">
+            <option>🌅 Breakfast</option><option>☀️ Lunch</option><option>🌙 Dinner</option><option>🍎 Snack</option>
+          </select>
+        </div>
+        <div><label class="field-label">Food Item</label><input class="inp" id="meal-food" placeholder="e.g. Oatmeal with banana"/></div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Calories</label><input class="inp" type="number" id="meal-cal" placeholder="350"/></div>
+          <div><label class="field-label">Protein (g)</label><input class="inp" type="number" id="meal-prot" placeholder="12"/></div>
+        </div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Carbs (g)</label><input class="inp" type="number" id="meal-carbs" placeholder="60"/></div>
+          <div><label class="field-label">Fats (g)</label><input class="inp" type="number" id="meal-fats" placeholder="8"/></div>
+        </div>
+        <button class="btn btn-rose" onclick="logMeal()">🍴 Log Meal</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Macros Today</div>
+      <canvas id="macroChart" height="140"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Today's Meal Log</div>
+    <table class="log-table">
+      <thead><tr><th>Meal</th><th>Food</th><th>Cal</th><th>Protein</th><th>Carbs</th><th>Fats</th><th></th></tr></thead>
+      <tbody id="meal-log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== DSA ===== -->
+<div id="page-dsa" class="page">
+  <div class="page-header"><h1 class="serif">DSA Tracker 💻</h1><p>Master Data Structures & Algorithms</p></div>
+  <div class="g4 mb">
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,240,224,0.6),rgba(160,220,190,0.4))">
+      <div class="stat-val" style="color:#2a7a54" id="dsa-total-v">0</div><div class="stat-label">Total Solved</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(230,215,255,0.6),rgba(212,191,255,0.4))">
+      <div class="stat-val" style="color:#6b4fbb" id="dsa-streak-v">0</div><div class="stat-label">Streak 🔥</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(245,230,218,0.6),rgba(232,213,192,0.4))">
+      <div class="stat-val" style="color:#c47a35" id="dsa-today-v">0</div><div class="stat-label">Today</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,214,232,0.6),rgba(240,184,208,0.4))">
+      <div class="stat-val" style="color:#c4607a" id="dsa-hard-v">0</div><div class="stat-label">Hard Solved</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">➕ Log Problem</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Problem Name</label><input class="inp" id="dsa-name" placeholder="e.g. Two Sum"/></div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Topic</label>
+            <select class="inp" id="dsa-topic">
+              <option>Arrays</option><option>Two Pointers</option><option>Hash Map</option>
+              <option>Sliding Window</option><option>Binary Search</option><option>Linked List</option>
+              <option>Trees</option><option>Graphs</option><option>DP</option><option>Backtracking</option>
+              <option>Stack/Queue</option><option>Heap</option><option>Tries</option><option>Greedy</option>
+            </select>
+          </div>
+          <div><label class="field-label">Difficulty</label>
+            <select class="inp" id="dsa-diff">
+              <option>Easy</option><option>Medium</option><option>Hard</option>
+            </select>
+          </div>
+        </div>
+        <div><label class="field-label">Platform</label>
+          <select class="inp" id="dsa-platform">
+            <option>LeetCode</option><option>HackerRank</option><option>Codeforces</option><option>GFG</option><option>Other</option>
+          </select>
+        </div>
+        <div><label class="field-label">Notes</label>
+          <textarea class="inp" id="dsa-notes" rows="3" placeholder="Key insight or approach..."></textarea>
+        </div>
+        <button class="btn btn-rose" onclick="logDSA()">💾 Log Problem</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Weekly Progress</div>
+      <canvas id="dsaChart" height="130"></canvas>
+    </div>
+  </div>
+  <div class="card mb">
+    <div class="card-title">📚 Topic Progress</div>
+    <div id="dsa-topics" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📝 Recent Problems</div>
+    <table class="log-table">
+      <thead><tr><th>Problem</th><th>Topic</th><th>Platform</th><th>Difficulty</th><th>Date</th><th></th></tr></thead>
+      <tbody id="dsa-log-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== GOALS ===== -->
+<div id="page-goals" class="page">
+  <div class="page-header"><h1 class="serif">Goals & Vision Board 🌟</h1><p>Dream big, track your journey</p></div>
+  <div class="g4 mb">
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(230,215,255,0.7),rgba(212,191,255,0.4))">
+      <div class="stat-val" style="color:#6b4fbb" id="g-total-v">0</div><div class="stat-label">Total Goals</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(200,240,224,0.7),rgba(160,220,190,0.4))">
+      <div class="stat-val" style="color:#2a7a54" id="g-done-v">0</div><div class="stat-label">Achieved</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(255,214,232,0.7),rgba(240,184,208,0.4))">
+      <div class="stat-val" style="color:#c4607a" id="g-progress-v">0%</div><div class="stat-label">Avg Progress</div>
+    </div>
+    <div class="stat-card" style="background:linear-gradient(135deg,rgba(245,230,218,0.7),rgba(232,213,192,0.4))">
+      <div class="stat-val" style="color:#c47a35" id="g-active-v">0</div><div class="stat-label">In Progress</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="card-title">✨ Add a Goal</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div><label class="field-label">Goal Title</label><input class="inp" id="goal-title" placeholder="e.g. Run a 5K"/></div>
+        <div><label class="field-label">Emoji</label><input class="inp" id="goal-emoji" placeholder="🏃" maxlength="2"/></div>
+        <div class="g2" style="gap:10px">
+          <div><label class="field-label">Category</label>
+            <select class="inp" id="goal-cat">
+              <option>Career</option><option>Health</option><option>Finance</option>
+              <option>Learning</option><option>Travel</option><option>Personal</option><option>Relationships</option>
+            </select>
+          </div>
+          <div><label class="field-label">Target Date</label><input class="inp" type="date" id="goal-date"/></div>
+        </div>
+        <div><label class="field-label">Initial Progress (%)</label><input class="inp" type="number" id="goal-prog" min="0" max="100" placeholder="0"/></div>
+        <button class="btn btn-rose" onclick="addGoal()">🌟 Add to Vision Board</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Progress Overview</div>
+      <canvas id="goalsChart" height="130"></canvas>
+    </div>
+  </div>
+  <div class="vision-grid" id="vision-grid"></div>
+</div>
+
+</main>
+
+<script src="app.js"></script>
+<script>
+  // Disable Live Server auto-reload (prevents page flicker on save)
+  if (window.WebSocket) {
+    const ws = window.WebSocket
+    window.WebSocket = function(url, ...args) {
+      if (url.includes('5501') || url.includes('livereload')) return { send:()=>{}, close:()=>{} }
+      return new ws(url, ...args)
+    }
+  }
+</script>
+<!-- CHATBOT BUTTON -->
+<button id="chat-toggle">🤖</button>
+
+<!-- CHATBOT -->
+<div id="chatbot">
+
+  <div id="chat-header">
+
+    <span>
+      LifeOS Assistant ✨
+    </span>
+
+    <div id="chat-actions">
+
+      <button id="voice-btn">
+        🎤
+      </button>
+
+      <button id="min-chat">
+        —
+      </button>
+
+      <button id="close-chat">
+        ✕
+      </button>
+
+    </div>
+
+  </div>
+
+  <div id="chat-body">
+
+    <button id="summary-btn">
+      📊 Daily Summary
+    </button>
+
+    <div id="chat-messages"></div>
+
+    <div id="smart-suggestions"></div>
+
+    <div id="chat-input-area">
+
+      <input
+        type="text"
+        id="chat-input"
+        placeholder="Ask something..."
+        onkeypress="
+          if(event.key==='Enter')
+          sendMessage()
+        "
+      />
+
+      <button onclick="sendMessage()">
+        ➤
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="chatbot.js"></script>
+
+
+</body>
+</html>

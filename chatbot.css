@@ -1,0 +1,340 @@
+#chat-toggle{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  border:none;
+  border-radius:50%;
+  background:#cdb4db;
+  color:white;
+  font-size:24px;
+  cursor:pointer;
+  z-index:999;
+  box-shadow:0 4px 15px rgba(0,0,0,0.2);
+}
+
+#chatbot{
+  position:fixed;
+  bottom:90px;
+  right:20px;
+  width:320px;
+  height:450px;
+  background:white;
+  border-radius:20px;
+  display:none;
+  flex-direction:column;
+  overflow:visible;
+  z-index:999;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+}
+#chat-body{
+
+  overflow-y:auto;
+}
+#chat-header{
+  background:#cdb4db;
+  color:white;
+  padding:15px;
+  font-weight:bold;
+}
+
+#chat-messages{
+  flex:1;
+  padding:10px;
+  overflow-y:auto;
+  font-size:14px;
+}
+
+#chat-input-area{
+  display:flex;
+  border-top:1px solid #eee;
+}
+
+#chat-input{
+  flex:1;
+  border:none;
+  padding:10px;
+  outline:none;
+}
+
+#chat-input-area button{
+  border:none;
+  background:#cdb4db;
+  color:white;
+  width:50px;
+  cursor:pointer;
+}
+.typing-dots span{
+
+  animation: blink 1s infinite;
+
+  font-size:20px;
+}
+
+.typing-dots span:nth-child(2){
+  animation-delay:0.2s;
+}
+
+.typing-dots span:nth-child(3){
+  animation-delay:0.4s;
+}
+
+@keyframes blink{
+
+  0%{
+    opacity:0.2;
+  }
+
+  50%{
+    opacity:1;
+  }
+
+  100%{
+    opacity:0.2;
+  }
+}
+#chat-header{
+  cursor:move;
+}
+#smart-suggestions{
+
+  padding:10px;
+
+  border-top:1px solid #eee;
+
+  background:#faf7ff;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:8px;
+}
+
+.suggestion{
+
+  background:#e9dcf5;
+
+  padding:8px 12px;
+
+  border-radius:12px;
+
+  font-size:13px;
+
+  color:#5b4b6b;
+
+  animation:fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn{
+
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+#summary-btn{
+
+  border:none;
+
+  background:#b799d6;
+
+  color:white;
+
+  padding:10px;
+
+  cursor:pointer;
+
+  font-size:14px;
+
+  font-weight:600;
+
+  transition:0.3s;
+}
+
+#summary-btn:hover{
+
+  background:#a27bc7;
+}
+#chat-header{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  padding:14px 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #d7bfff,
+      #bca7ff
+    );
+
+  color:white;
+
+  font-weight:700;
+}
+
+#chat-actions{
+
+  display:flex;
+
+  gap:8px;
+}
+
+#voice-btn,
+#min-chat,
+#close-chat{
+
+  width:34px;
+
+  height:34px;
+
+  border:none;
+
+  border-radius:50%;
+
+  cursor:pointer;
+
+  font-size:15px;
+
+  background:
+    rgba(255,255,255,0.18);
+
+  color:white;
+
+  transition:0.25s;
+
+  backdrop-filter:blur(10px);
+}
+
+#voice-btn:hover,
+#min-chat:hover,
+#close-chat:hover{
+
+  transform:scale(1.08);
+
+  background:
+    rgba(255,255,255,0.28);
+}
+#chat-header{
+
+  min-height:60px;
+}
+#chat-body{
+
+  display:flex;
+
+  flex-direction:column;
+
+  flex:1;
+}
+#chat-body{
+
+  flex:1;
+
+  overflow:hidden;
+}
+/* ===== DARK MODE CHATBOT ===== */
+
+.dark-mode #chatbot{
+
+  background:#241f33;
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.35);
+}
+
+/* Chat messages */
+
+.dark-mode #chat-messages{
+
+  background:#241f33;
+
+  color:#f3eaff;
+}
+
+/* Suggestions */
+
+.dark-mode .suggestion{
+
+  background:#342b49;
+
+  color:#f3eaff;
+}
+
+/* Input area */
+
+.dark-mode #chat-input-area{
+
+  background:#1d1830;
+
+  border-top:
+    1px solid rgba(255,255,255,0.05);
+}
+
+/* Input */
+
+.dark-mode #chat-input{
+
+  background:transparent;
+
+  color:#f3eaff;
+}
+
+.dark-mode #chat-input::placeholder{
+
+  color:#bda9d9;
+}
+
+/* Send button */
+
+.dark-mode #chat-input-area button{
+
+  background:
+    linear-gradient(
+      135deg,
+      #d7bfff,
+      #bca7ff
+    );
+
+  color:white;
+}
+
+/* Bot + user text */
+
+.dark-mode #chat-messages strong{
+
+  color:#ffffff;
+}
+
+.dark-mode #chat-messages div{
+
+  color:#eadcff;
+}
+.dark-mode #chat-header{
+
+  background:
+    linear-gradient(
+      135deg,
+      #2d2440,
+      #3a2f56
+    );
+
+  color:#f8ecff;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.05);
+}
