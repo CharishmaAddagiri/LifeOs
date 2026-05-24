@@ -1,8 +1,16 @@
+const express = require("express")
 const bcrypt = require('bcrypt');
 const express = require("express")
+const path = require("path")
 const cors    = require("cors")
 const sqlite3 = require("sqlite3").verbose()
 const app     = express()
+app.use(express.static(__dirname))
+app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "dashboard.html")
+  )
+})
 
 app.use(cors())
 app.use(express.json())
