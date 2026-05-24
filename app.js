@@ -44,7 +44,7 @@ function toast(msg, dur=2600) {
 }
 
 // ── API wrapper — all calls go through here ──────────────────────
-const BASE = window.location.origin// same origin, Express serves frontend too
+const BASE = window.location.origin
 
 async function api(method, path, body=null) {
   const opts = { method, headers:{"Content-Type":"application/json"} }
